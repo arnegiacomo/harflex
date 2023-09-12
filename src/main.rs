@@ -43,7 +43,7 @@ fn main() {
 
 fn init() {
     println!("Initial setup is required.");
-    println!("Do you want to continue? (y/n): ");
+    print!("Do you want to continue? (y/n): ");
     io::stdout().flush().expect("Failed to flush stdout");
 
     let mut response = String::new();
