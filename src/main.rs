@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 use clap::{command, Command};
+use std::fs;
 
 static HARFLEX_DIR: &str = ".harflex";
 
@@ -27,7 +28,7 @@ fn main() {
             path.push(HARFLEX_DIR);
 
             if !path.exists() &&! path.is_dir() {
-                setup();
+                init();
             }
         }
         None => {
@@ -37,11 +38,11 @@ fn main() {
     }
 }
 
-fn setup() {
+fn init() {
     let mut path = dirs::home_dir().unwrap();
     path.push(HARFLEX_DIR);
 
-    std::fs::create_dir_all(&path).unwrap();
+    fs::create_dir_all(&path).unwrap();
     println!("Please visit https://id.getharvest.com/developers and create a new personal access token.");
 
     print!("Insert token here: ");
@@ -50,6 +51,11 @@ fn setup() {
     io::stdin().read_line(&mut access_token).expect("Failed to read line");
 
     let access_token = access_token.trim();
+    let token_file_path = path.join("access_token");
 
-    println!("You entered access token: {}", access_token);
+    if let Err(err) = fs::write(&token_file_path, access_token) {
+        eprintln!("Error writing access token to file: {}", err);
+    } else {
+        println!("Access token saved to file: {:?}", token_file_path);
+    }
 }
