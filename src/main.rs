@@ -17,10 +17,13 @@ fn main() {
         path.push(HARFLEX_DIR);
 
         if path.exists() && path.is_dir() {
-            std::fs::remove_dir_all(&path).unwrap();
+            fs::remove_dir_all(&path).unwrap();
             println!("Deleted ~/.harflex directory");
             std::process::exit(0);
         }
+
+        println!("No ~/.harflex directory found");
+        std::process::exit(1);
     }
 
     match dirs::home_dir() {
@@ -39,10 +42,20 @@ fn main() {
 }
 
 fn init() {
-    let mut path = dirs::home_dir().unwrap();
-    path.push(HARFLEX_DIR);
+    println!("Initial setup is required.");
+    println!("Do you want to continue? (y/n): ");
+    io::stdout().flush().expect("Failed to flush stdout");
 
-    fs::create_dir_all(&path).unwrap();
+    let mut response = String::new();
+    io::stdin().read_line(&mut response).expect("Failed to read line");
+
+    let response = response.trim().to_lowercase();
+
+    if response != "y" && response != "yes" {
+        println!("Setup aborted. Exiting...");
+        std::process::exit(0);
+    }
+
     println!("Please visit https://id.getharvest.com/developers and create a new personal access token.");
 
     print!("Insert token here: ");
@@ -51,11 +64,13 @@ fn init() {
     io::stdin().read_line(&mut access_token).expect("Failed to read line");
 
     let access_token = access_token.trim();
-    let token_file_path = path.join("access_token");
 
-    if let Err(err) = fs::write(&token_file_path, access_token) {
-        eprintln!("Error writing access token to file: {}", err);
-    } else {
-        println!("Access token saved to file: {:?}", token_file_path);
-    }
+    let mut path = dirs::home_dir().unwrap();
+    path.push(HARFLEX_DIR);
+
+    fs::create_dir_all(&path).unwrap();
+    let token_file_path = path.join("access_token");
+    fs::write(&token_file_path, access_token).unwrap();
+
+    println!("Access token saved to file: {:?}", token_file_path);
 }
